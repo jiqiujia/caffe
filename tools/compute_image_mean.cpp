@@ -48,6 +48,8 @@ int main(int argc, char** argv) {
   BlobProto sum_blob;
   int count = 0;
   // load first datum
+  //********************add note*******************//
+  /*load first datum to decide the data_size*/
   Datum datum;
   datum.ParseFromString(cursor->value());
 

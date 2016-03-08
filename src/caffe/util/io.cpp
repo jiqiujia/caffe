@@ -69,9 +69,10 @@ void WriteProtoToBinaryFile(const Message& proto, const char* filename) {
   CHECK(proto.SerializeToOstream(&output));
 }
 
+//**************add scale parameter*****************//
 #ifdef USE_OPENCV
 cv::Mat ReadImageToCVMat(const string& filename,
-    const int height, const int width, const bool is_color) {
+    const int height, const int width, const double scale, const bool is_color) {
   cv::Mat cv_img;
   int cv_read_flag = (is_color ? CV_LOAD_IMAGE_COLOR :
     CV_LOAD_IMAGE_GRAYSCALE);
@@ -80,7 +81,10 @@ cv::Mat ReadImageToCVMat(const string& filename,
     LOG(ERROR) << "Could not open or find file " << filename;
     return cv_img_origin;
   }
-  if (height > 0 && width > 0) {
+  if (scale > 0){
+    LOG(WARNING) << "use scale_percentage parameter instead of resize_heig    ht and resize_width."; 
+	cv::resize(cv_img_origin, cv_img, cv::Size(0,0), scale, scale);
+  }else if (height > 0 && width > 0) {
     cv::resize(cv_img_origin, cv_img, cv::Size(width, height));
   } else {
     cv_img = cv_img_origin;
@@ -89,17 +93,22 @@ cv::Mat ReadImageToCVMat(const string& filename,
 }
 
 cv::Mat ReadImageToCVMat(const string& filename,
+    const int height, const int width,  const bool is_color) {
+  return ReadImageToCVMat(filename, height, width, 0, is_color);
+}
+
+cv::Mat ReadImageToCVMat(const string& filename,
     const int height, const int width) {
-  return ReadImageToCVMat(filename, height, width, true);
+  return ReadImageToCVMat(filename, height, width, 0, true);
 }
 
 cv::Mat ReadImageToCVMat(const string& filename,
     const bool is_color) {
-  return ReadImageToCVMat(filename, 0, 0, is_color);
+  return ReadImageToCVMat(filename, 0, 0, 0, is_color);
 }
 
 cv::Mat ReadImageToCVMat(const string& filename) {
-  return ReadImageToCVMat(filename, 0, 0, true);
+  return ReadImageToCVMat(filename, 0, 0, 0, true);
 }
 
 // Do the file extension and encoding match?
@@ -116,10 +125,11 @@ static bool matchExt(const std::string & fn,
   return false;
 }
 
+//******************add scale parameter*******************//
 bool ReadImageToDatum(const string& filename, const int label,
-    const int height, const int width, const bool is_color,
+    const int height, const int width, const double scale, const bool is_color,
     const std::string & encoding, Datum* datum) {
-  cv::Mat cv_img = ReadImageToCVMat(filename, height, width, is_color);
+  cv::Mat cv_img = ReadImageToCVMat(filename, height, width, scale, is_color);
   if (cv_img.data) {
     if (encoding.size()) {
       if ( (cv_img.channels() == 3) == is_color && !height && !width &&

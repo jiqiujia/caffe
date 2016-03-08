@@ -43,6 +43,12 @@ DEFINE_bool(encoded, false,
 DEFINE_string(encode_type, "",
     "Optional: What type should we encode the image as ('png','jpg',...).");
 
+//*****************************************//
+//added on 6 March 2016
+//add the rescaling option: zoom by percentage
+DEFINE_double(scale_percentage, 0, "size downscaling percentage");
+//*****************************************//
+ 
 int main(int argc, char** argv) {
 #ifdef USE_OPENCV
   ::google::InitGoogleLogging(argv[0]);
@@ -90,7 +96,9 @@ int main(int argc, char** argv) {
 
   int resize_height = std::max<int>(0, FLAGS_resize_height);
   int resize_width = std::max<int>(0, FLAGS_resize_width);
-
+  //*******************add scale parameter*********************//
+  double scale = std::max<double>(0, FLAGS_scale_percentage);
+  
   // Create new DB
   scoped_ptr<db::DB> db(db::GetDB(FLAGS_backend));
   db->Open(argv[3], db::NEW);
@@ -116,7 +124,7 @@ int main(int argc, char** argv) {
       std::transform(enc.begin(), enc.end(), enc.begin(), ::tolower);
     }
     status = ReadImageToDatum(root_folder + lines[line_id].first,
-        lines[line_id].second, resize_height, resize_width, is_color,
+        lines[line_id].second, resize_height, resize_width, scale, is_color,
         enc, &datum);
     if (status == false) continue;
     if (check_size) {

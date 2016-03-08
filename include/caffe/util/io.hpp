@@ -96,9 +96,17 @@ inline bool ReadFileToDatum(const string& filename, Datum* datum) {
   return ReadFileToDatum(filename, -1, datum);
 }
 
+//*******************add scale version**************************//
 bool ReadImageToDatum(const string& filename, const int label,
-    const int height, const int width, const bool is_color,
+    const int height, const int width, const double scale, const bool is_color,
     const std::string & encoding, Datum* datum);
+
+
+inline bool ReadImageToDatum(const string& filename, const int label,
+    const int height, const int width, const bool is_color,
+    const std::string & encoding, Datum* datum){
+	return ReadImageToDatum(filename, label, height, width, 0, is_color, encoding, datum);
+}
 
 inline bool ReadImageToDatum(const string& filename, const int label,
     const int height, const int width, const bool is_color, Datum* datum) {
@@ -129,7 +137,11 @@ inline bool ReadImageToDatum(const string& filename, const int label,
 bool DecodeDatumNative(Datum* datum);
 bool DecodeDatum(Datum* datum, bool is_color);
 
+//*****************add scale version********************//
 #ifdef USE_OPENCV
+cv::Mat ReadImageToCVMat(const string& filename,
+    const int height, const int width, const double scale, const bool is_color);
+
 cv::Mat ReadImageToCVMat(const string& filename,
     const int height, const int width, const bool is_color);
 
