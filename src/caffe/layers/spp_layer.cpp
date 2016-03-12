@@ -13,6 +13,8 @@ namespace caffe {
 using std::min;
 using std::max;
 
+//********************add note**********************//
+/*In this implementation, spp can only specifies the height and the bin sizeof each level is the power of 2*/
 template <typename Dtype>
 LayerParameter SPPLayer<Dtype>::GetPoolingParam(const int pyramid_level,
       const int bottom_h, const int bottom_w, const SPPParameter spp_param) {

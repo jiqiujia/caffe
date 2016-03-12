@@ -1,5 +1,7 @@
 #ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #endif  // USE_OPENCV
 
 #include <string>
@@ -28,6 +30,7 @@ DataTransformer<Dtype>::DataTransformer(const TransformationParameter& param,
     ReadProtoFromBinaryFileOrDie(mean_file.c_str(), &blob_proto);
     data_mean_.FromProto(blob_proto);
   }
+  LOG(INFO) << "mean file loaded";
   // check if we want to use mean_value
   if (param_.mean_value_size() > 0) {
     CHECK(param_.has_mean_file() == false) <<
@@ -293,6 +296,17 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
 
   CHECK(cv_cropped_img.data);
 
+  //******************add rotation*************************//
+  const int rotation = param_.rotation(); 
+  if (rotation){
+	int angle = Rand(rotation);
+	cv::Point2f pt(cv_cropped_img.cols/2., cv_cropped_img.rows/2.);
+	cv::Mat r = getRotationMatrix2D(pt, angle, 1.0);
+	cv::warpAffine(cv_cropped_img, cv_cropped_img, r, cv_cropped_img.size());
+	cv::imshow("demo", cv_cropped_img);
+	cvWaitKey(0);
+  }
+
   Dtype* transformed_data = transformed_blob->mutable_cpu_data();
   int top_index;
   for (int h = 0; h < height; ++h) {
@@ -521,8 +535,10 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(
 
 template <typename Dtype>
 void DataTransformer<Dtype>::InitRand() {
+  //************add rotation******************//
   const bool needs_rand = param_.mirror() ||
-      (phase_ == TRAIN && param_.crop_size());
+      (phase_ == TRAIN && param_.crop_size()) ||
+	   (phase_ == TRAIN && param_.rotation());
   if (needs_rand) {
     const unsigned int rng_seed = caffe_rng_rand();
     rng_.reset(new Caffe::RNG(rng_seed));
